@@ -1,6 +1,2 @@
-# image-processing
-# image-processing
-# image-processing
-# image-processing
-# image-processing
-# Artificial-Intelligence
+- A* and Greedy Search (Shortest Path in Maze)
+- Genetic Algorithms (Finding Solution (Range) to Maximize Profit)
