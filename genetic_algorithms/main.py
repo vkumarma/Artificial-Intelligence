@@ -14,47 +14,6 @@ config = configparser.ConfigParser()
 # Read the configuration file
 config.read('config.ini')
 
-
-# Access and validate the parameters
-def validate_parameters(config):
-    FILENAME = config.get('GENETIC_ALGORITHM', 'FILENAME')
-    POPULATION_SIZE = config.getint('GENETIC_ALGORITHM', 'POPULATION_SIZE')
-    NUM_GENERATIONS = config.getint('GENETIC_ALGORITHM', 'NUM_GENERATIONS')
-    SELECTION_TYPE = config.get('GENETIC_ALGORITHM', 'SELECTION_TYPE')
-    CROSSOVER_TYPE = config.get('GENETIC_ALGORITHM', 'CROSSOVER_TYPE')
-    MUTATION_RATE = config.getfloat('GENETIC_ALGORITHM', 'MUTATION_RATE')
-    RATE_DECREASES = config.getboolean('GENETIC_ALGORITHM', 'RATE_DECREASES')
-    MUTATION_RATE_DELTA = config.getfloat('GENETIC_ALGORITHM', 'MUTATION_RATE_DELTA')
-    PERCENTAGE_GENERATED = config.getfloat('GENETIC_ALGORITHM', 'PERCENTAGE_GENERATED')
-
-    # Validation
-    if POPULATION_SIZE <= 0:
-        raise ValueError("POPULATION_SIZE must be a positive integer.")
-    if NUM_GENERATIONS <= 0:
-        raise ValueError("NUM_GENERATIONS must be a positive integer.")
-
-    valid_selection_types = ['elitist', 'tournament']
-    if SELECTION_TYPE not in valid_selection_types:
-        raise ValueError(f"SELECTION_TYPE must be one of: {valid_selection_types}.")
-
-    valid_crossover_types = ['uniform', 'k-point']
-    if CROSSOVER_TYPE not in valid_crossover_types:
-        raise ValueError(f"CROSSOVER_TYPE must be one of: {valid_crossover_types}.")
-
-    if not (0 <= MUTATION_RATE <= 1):
-        raise ValueError("MUTATION_RATE must be between 0 and 1.")
-
-    if RATE_DECREASES and (MUTATION_RATE_DELTA <= 0):
-        raise ValueError("MUTATION_RATE_DELTA must be positive if RATE_DECREASES is True.")
-
-    if not (0 <= PERCENTAGE_GENERATED <= 1):
-        raise ValueError("PERCENTAGE_GENERATED must be between 0 and 1.")
-
-    return (FILENAME, POPULATION_SIZE, NUM_GENERATIONS, SELECTION_TYPE,
-            CROSSOVER_TYPE, MUTATION_RATE, RATE_DECREASES,
-            MUTATION_RATE_DELTA, PERCENTAGE_GENERATED)
-
-
 MEAN = 0
 STD_DEV = 1.15
 SEED_NUMBER = 42
@@ -106,7 +65,47 @@ class Chromosome:
         return len(self.encoding)
 
 
-def process_data(file_name):
+# Access and validate the parameters
+def validate_parameters(config):
+    FILENAME = config.get('GENETIC_ALGORITHM', 'FILENAME')
+    POPULATION_SIZE = config.getint('GENETIC_ALGORITHM', 'POPULATION_SIZE')
+    NUM_GENERATIONS = config.getint('GENETIC_ALGORITHM', 'NUM_GENERATIONS')
+    SELECTION_TYPE = config.get('GENETIC_ALGORITHM', 'SELECTION_TYPE')
+    CROSSOVER_TYPE = config.get('GENETIC_ALGORITHM', 'CROSSOVER_TYPE')
+    MUTATION_RATE = config.getfloat('GENETIC_ALGORITHM', 'MUTATION_RATE')
+    RATE_DECREASES = config.getboolean('GENETIC_ALGORITHM', 'RATE_DECREASES')
+    MUTATION_RATE_DELTA = config.getfloat('GENETIC_ALGORITHM', 'MUTATION_RATE_DELTA')
+    PERCENTAGE_GENERATED = config.getfloat('GENETIC_ALGORITHM', 'PERCENTAGE_GENERATED')
+
+    # Validation
+    if POPULATION_SIZE <= 0:
+        raise ValueError("POPULATION_SIZE must be a positive integer.")
+    if NUM_GENERATIONS <= 0:
+        raise ValueError("NUM_GENERATIONS must be a positive integer.")
+
+    valid_selection_types = ['elitist', 'tournament']
+    if SELECTION_TYPE not in valid_selection_types:
+        raise ValueError(f"SELECTION_TYPE must be one of: {valid_selection_types}.")
+
+    valid_crossover_types = ['uniform', 'k-point']
+    if CROSSOVER_TYPE not in valid_crossover_types:
+        raise ValueError(f"CROSSOVER_TYPE must be one of: {valid_crossover_types}.")
+
+    if not (0 <= MUTATION_RATE <= 1):
+        raise ValueError("MUTATION_RATE must be between 0 and 1.")
+
+    if RATE_DECREASES and (MUTATION_RATE_DELTA <= 0):
+        raise ValueError("MUTATION_RATE_DELTA must be positive if RATE_DECREASES is True.")
+
+    if not (0 <= PERCENTAGE_GENERATED <= 1):
+        raise ValueError("PERCENTAGE_GENERATED must be between 0 and 1.")
+
+    return (FILENAME, POPULATION_SIZE, NUM_GENERATIONS, SELECTION_TYPE,
+            CROSSOVER_TYPE, MUTATION_RATE, RATE_DECREASES,
+            MUTATION_RATE_DELTA, PERCENTAGE_GENERATED)
+
+
+def process_data(file_name):  # processing historical data from .txt files
     data = []
     file_path = os.path.join(os.getcwd(), file_name)
     with open(file_path, 'r') as file:
@@ -259,60 +258,61 @@ def print_parameters(filename, population_size, num_generations, selection_type,
     print(f"PERCENTAGE_GENERATED: {percentage_generated}")
 
 
-parameters = validate_parameters(config)
-# Set constants
-FILENAME = parameters[0]
-POPULATION_SIZE = parameters[1]
-NUM_GENERATIONS = parameters[2]
-SELECTION_TYPE = parameters[3]
-CROSSOVER_TYPE = parameters[4]
-MUTATION_RATE = parameters[5]
-RATE_DECREASES = parameters[6]
-MUTATION_RATE_DELTA = parameters[7]
-PERCENTAGE_GENERATED = parameters[8]
+if __name__ == '__main__':
+    parameters = validate_parameters(config)
+    # Set constants
+    FILENAME = parameters[0]
+    POPULATION_SIZE = parameters[1]
+    NUM_GENERATIONS = parameters[2]
+    SELECTION_TYPE = parameters[3]
+    CROSSOVER_TYPE = parameters[4]
+    MUTATION_RATE = parameters[5]
+    RATE_DECREASES = parameters[6]
+    MUTATION_RATE_DELTA = parameters[7]
+    PERCENTAGE_GENERATED = parameters[8]
 
-# Print the constants
-print_parameters(FILENAME, POPULATION_SIZE, NUM_GENERATIONS, SELECTION_TYPE,
-                 CROSSOVER_TYPE, MUTATION_RATE, RATE_DECREASES,
-                 MUTATION_RATE_DELTA, PERCENTAGE_GENERATED)
-
-
-data = process_data(FILENAME)
-population = generate_initial_population(POPULATION_SIZE)  # generates initial population
-X = int(PERCENTAGE_GENERATED * POPULATION_SIZE)  # number of chromosomes selected using selection
-Y = POPULATION_SIZE - X  # remaining generated using crossover
-gen = 0  # keeps track of generation
-highest_fitness_chromo = []
-print("\n")
-while gen <= NUM_GENERATIONS:
-    # if gen != 0 and gen % 10 != 0:
-    #     print("Generation: ", gen)
-    for chromosome in population:
-        matched, score = fitness_score(chromosome, data)
-        if matched:
-            chromosome.fitness = score
-
-    heap = Chromosomes_heap()  # adding chromosomes to the heap
-    for solution in population:
-        heap.add(solution)
-
-    if gen != 0 and gen % 10 == 0:
-        print("Generation: ", gen, "max:", heap.max().fitness, "min:", heap.min().fitness, "average:", heap.average())
-
-    if gen == NUM_GENERATIONS:
-        highest_fitness_chromo.append(heap.max())
-        break
-
-    selected_chromosomes = selection(SELECTION_TYPE, X, heap)
-    crossover_chromosomes = crossover(CROSSOVER_TYPE, Y, selected_chromosomes)
-    new_chromosomes = selected_chromosomes + crossover_chromosomes
-    population = mutation(MUTATION_RATE, new_chromosomes)
-
-    if RATE_DECREASES:  # if this flag is true mutation rate will decrease by some value
-        if MUTATION_RATE - MUTATION_RATE_DELTA > 0:
-            MUTATION_RATE -= MUTATION_RATE_DELTA
-    gen += 1
+    # Print the constants
+    print_parameters(FILENAME, POPULATION_SIZE, NUM_GENERATIONS, SELECTION_TYPE,
+                     CROSSOVER_TYPE, MUTATION_RATE, RATE_DECREASES,
+                     MUTATION_RATE_DELTA, PERCENTAGE_GENERATED)
 
 
-print("\n")
-print("Generation: ", gen, "Final Solution: ", highest_fitness_chromo[0].encoding, "Fitness Score: ", highest_fitness_chromo[0].fitness)
+    data = process_data(FILENAME)
+    population = generate_initial_population(POPULATION_SIZE)  # generates initial population
+    X = int(PERCENTAGE_GENERATED * POPULATION_SIZE)  # number of chromosomes selected using selection
+    Y = POPULATION_SIZE - X  # remaining generated using crossover
+    gen = 0  # keeps track of generation
+    highest_fitness_chromo = []
+    print("\n")
+    while gen <= NUM_GENERATIONS:
+        # if gen != 0 and gen % 10 != 0:
+        #     print("Generation: ", gen)
+        for chromosome in population:
+            matched, score = fitness_score(chromosome, data)
+            if matched:
+                chromosome.fitness = score
+
+        heap = Chromosomes_heap()  # adding chromosomes to the heap
+        for solution in population:
+            heap.add(solution)
+
+        if gen != 0 and gen % 10 == 0:
+            print("Generation: ", gen, "max:", heap.max().fitness, "min:", heap.min().fitness, "average:", heap.average())
+
+        if gen == NUM_GENERATIONS:
+            highest_fitness_chromo.append(heap.max())
+            break
+
+        selected_chromosomes = selection(SELECTION_TYPE, X, heap)
+        crossover_chromosomes = crossover(CROSSOVER_TYPE, Y, selected_chromosomes)
+        new_chromosomes = selected_chromosomes + crossover_chromosomes
+        population = mutation(MUTATION_RATE, new_chromosomes)
+
+        if RATE_DECREASES:  # if this flag is true mutation rate will decrease by some value
+            if MUTATION_RATE - MUTATION_RATE_DELTA > 0:
+                MUTATION_RATE -= MUTATION_RATE_DELTA
+        gen += 1
+
+
+    print("\n")
+    print("Generation: ", gen, "Final Solution: ", highest_fitness_chromo[0].encoding, "Fitness Score: ", highest_fitness_chromo[0].fitness)
