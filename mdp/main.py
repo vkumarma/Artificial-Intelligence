@@ -1,4 +1,4 @@
-SIGMA = 0.95
+ALPHA = 0.95  # discount factor
 
 
 class State:
@@ -67,7 +67,7 @@ def value_iteration(states, mdp_states):  # value iteration algorithm using bell
         for state in states:
             current_max = []
             for action in state.transitions:
-                exp_utility = state.reward + SIGMA * (sum(
+                exp_utility = state.reward + ALPHA * (sum(
                     [mdp_states[st].expected_utility * prob for st, prob in state.transitions[action]]))
                 exp_utility = round(exp_utility, 2)
                 if len(current_max) == 0:
