@@ -1,2 +1,3 @@
 - A* and Greedy Search (Shortest Path in Maze)
 - Genetic Algorithms (Finding Solution (Range) to Maximize Profit)
+- Markov Decision Processes (Optimal policy or action for every state)
